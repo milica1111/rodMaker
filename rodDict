@@ -1,0 +1,313 @@
+########################## COMMENT SECTION ##########################
+# This input file 'rodDict' is read by the python script 'rodMaker.py' in 
+# order to build the 'blockMeshDict' file for a 1D, 2D-smeared, 2D-discrete,
+# or 3D nuclear fuel rod model.
+
+# The rod is reproduced with a computational mesh made of a  
+# series of blocks. A block is a portion of the mesh with constant geometry  
+# (radii, height etc.) and same numerical discretization (number of cells along 
+# x, y and z). Note that the blocks must be created both for the fuel and for 
+# the cladding.
+
+# Each block is identified with a name, which OFFBEAT uses to set the material 
+# properties and models. Note that the same name can be used for different
+# blocks. In this case, OFFBEAT will group the blocks together under the same
+# cellZone/material, that is a group of cells sharing the same material 
+# properties and behavioral models (see the file solverDict).  
+
+# Depending on the geometry, for each block it is necessary to specify:
+# -the height;
+# -the inner and outer radii;
+# -the number of azimuthal cells, (for 1D and 2D this number is 1)
+# -the number of radial cells 'nCellsR' 
+# -the number of axial cells 'nCellsZ'
+
+# One can also specify the offset value from the 0m axial position 
+# (one for the fuel and one for the cladding). For example, it can be used to 
+# create a lower plenum below the fuel stack.
+
+# If the bottom cap is included, then 
+# the fuelBottom patch type is changed to regionCoupledOFFBEAT to allow coupling
+# with the 'bottomCapInner' patch.
+
+# If 'geometryType' is set to '2Ddiscrete' or '3D', then the number of pellets in the 
+# fuel blocks must be introduced in the block dictionary with the keyword 'nPelletsFuel'.
+
+# Each pellet is modeled separately with a number of axial cells specified by 
+# the keyword 'nCellsZPellet'.
+
+# The patch type for the top and bottom patches in between pellets
+# is set to 'regionCoupledOFFBeat'. If mergeFuelPatchPairset to True,
+# the subsequent patches are merged together and disappear from the mesh boundary.
+
+# For the 1D and 2D-smeared geometries, merging among fuel blocks and cladding blocks is authomatic.
+# If in the 2D-smeared geometry the caps are defined, the regionCoupledOFFBeat patches are set
+# coupling the bottom/top capInner faces with fuel bottom/top faces.
+
+# Note that when visualizing a merged mesh in ParaFoam, it might be necessary to
+# activate the VTK Polyhedron to correctly visualize the mesh.
+
+# Note also that only the overlapping portion of the two subsequent patches is 
+# going to be merged and disappear. The remaining portion remains as a separate patch.
+
+# The wedge patch types are always set to 'wedge' by default.
+
+# The name of the patches are set by default:
+# -fuelInner and cladInner
+# -fuelOuter and cladOuter
+# -fuelTop and cladTop
+# -fuelBottom and cladBottom
+# for 1D and 2D:
+# -fuelFront and fuelBack
+# -cladFront and cladBack
+
+# The name of the top/bottom patches in between slices/pellets/blocks are obtained
+# by adding the number of the section to the corresponing top/bottom patch name
+# e.g. fuelTop_1, fuelTop_2 etc..
+
+# Note 1 : 
+# Physical dimensions:
+# - angles -> degrees
+
+# Note 2 : 
+# the origin is (0, 0, 0)
+
+# Note 3 :
+# The wedge axis is aligned with the z axis,
+# and the symmetry plane that cuts the wedge in half is the xy plane
+
+# Note 4 :
+# For both fuel and cladding the blocks are created from bottom to top in the 
+# order they are introduced in this dictionary
+
+# Note 5 :
+# Geometrical quantities (heights, radii and offset) must always be written in
+# the dictionary as floats (i.e. with the dot followed by decimal digits), even
+# if the decimal part is zero: e.g. 5 --> 5.00 
+
+
+############################################################################
+############################################################################
+########################## USER INPUT SECTION ##############################
+############################################################################
+############################################################################
+{
+    
+# Unit conversion (e.g. 0.001 for units in mm)
+'convertToMeters':          	0.001,
+
+
+# Either '1D', '2D-smeared', '2D-discrete' or '3D'
+'geometryType':             	'3D',
+
+
+#...........................................................................
+#............ for 1D, 2D-smeared and 2D-discrete geometries: ...............
+#...........................................................................
+
+# Angle of the wedge, degrees
+'wedgeAngle':               	2,
+
+
+#...........................................................................
+#................... Universal for all geometries: .........................
+#...........................................................................
+
+# Number of blocks of fuel and cladding and their respective names
+'nBlocksFuel':                  5,
+'blockNameFuel':                ["fuel1", "fuel2", "fuel3", "fuel4", "fuel5"],
+'nBlocksClad':                  1,
+'blockNameClad':                ["cladding_main"],
+
+# Starting vertical offset
+'offsetFuel':                   0.0,
+'offsetClad':                   0.0,
+
+#### IMPORTANT: 
+# ! for each block of fuel/cladding the input in the list should be provided !
+
+# Radii of fuel and cladding (one per block)
+
+'rInnerFuel':                   [0.0, 1.0, 0.2, 0.0, 1.0],
+'rOuterFuel':                   [5.0, 5.3, 5.2, 4.5, 4.9],
+'rInnerClad':                   [6.0],
+'rOuterClad':                   [7.0],
+
+
+# Axial length (height) of each block
+# (e.g. [1500, 1500] for a 3000 long column made up of two blocks)
+'heightFuel':                   [50.0, 66.0, 15.0, 40.0, 30],
+'heightClad':                   [201.0],
+
+
+#...........................................................................
+#................ for 2D-discrete and 3D geometries: .......................
+#...........................................................................
+
+# Number of pellets per block
+'nPelletsFuel':                 [5, 6, 3, 2, 3],
+
+
+#...........................................................................
+#............. For 2D-smeared, 2D-discrete, and 3D geometries: .............
+#...........................................................................
+
+# Bottom and top caps (set height to 0 for neglecting the cap)
+'bottomCapHeight':              3.0,
+'nCellsRBottomCap':             40,
+'nCellsZBottomCap':             10,
+
+'topCapHeight':                 3.5,
+ 'nCellsRTopCap':               40,
+ 'nCellsZTopCap':               10,
+
+#...........................................................................
+#........................... for 3D geometry: ..............................
+#...........................................................................
+# For creating a mesh of the inner part of the cap, the square is being 
+# created with the uniform mesh. squareFraction represents the fraction 
+# of the inner cladding radius that is used to define the size of the 
+# square - half of the diagonal of the square is set to:
+# (squareFraction)*(cladding inner radius)
+
+ 'squareFractionBottomCap':      0.5,
+ 'squareFractionTopCap':       0.8,
+
+#...........................................................................
+#................. only for 2D-discrete and 3D geometries: .................
+#...........................................................................
+
+
+#------------------------- merging options ---------------------------------
+# Merge consecutive overlapping patches along z axis (True/False)
+'mergeCladPatchPairs':              True,
+'mergeFuelPatchPairs':              False,
+
+
+
+#--------------- options for dished and chamfered pellets---------------------
+#### IMPORTANT: 
+# ! for each block of fuel/cladding the input in the list should be provided !
+# If the pellet is not dished or chamfered set the next parameters to 0.0 for
+# all the fuel blocks.
+
+
+# Geometry of the fuel pellet
+'rDishFuel':                       [3.0, 4.0, 0.0, 0.0, 3.0],
+'rCurvatureDish':                  [5.0, 4.9, 0.0, 0.0, 8.0],
+'chamferHeight':                   [0.5, 0.3, 0.2, 0.0, 0.0],
+'chamferWidth':                    [0.5, 0.3, 0.5, 0.0, 0.0],
+
+
+#x+x+x+x+x+x+x+x+x+x+x+x+x+x+x SETTING UP x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x++x+x
+#-*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+#x+x+x+x+x+x+x+x+x+x+x+x+x+x MESH PROPERTIES x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x
+#-*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+#### IMPORTANT: 
+# ! for each block of fuel/cladding the input in the list should be provided !
+
+
+#...........................................................................
+#.................. for 1D and 2D-smeared geometries: ......................
+#...........................................................................
+
+# This part is filled only for the 1D and 2D-smeared geometries.
+# Each field is a list of the values corresponding to each block.
+
+# mesh properties:
+'nCellFuelR'          :     [20, 20, 20, 20, 20],
+'nCellFuelZ'          :     [10, 10, 20, 30, 10],
+
+#...............................................................................
+#.......................... for 3D geometries: .................................
+#...............................................................................
+
+########################### FUEL MESH PROPERTIES: ##############################
+
+# ! for each block of fuel/cladding the input in the list should be provided !
+
+# squareFraction: in order to mesh the non-annular 3D pellet, the square is
+# created in the central region of the pellet, and meshed with uniform mesh. 
+# One should distinguish between:
+# DISHED pellet:  squareFraction represents the fraction of the dish radius
+# NOT DISHED pellet: squareFraction is the fraction of the outer pellet radius
+# taken by the square (diag(square)/2 = squareFraction * radius)
+
+'squareFraction' :               [0.50, 0.80, 0.0, 0.6, 0.1],
+
+# in the case of the annular fuel pellet the previous fraction will not be used,
+# so the value for that block can be set to any value or None.
+
+
+#...............................................................................
+#........................ for 2D-discrete and 3D geometries: ...................
+#...............................................................................
+
+# Number of cells in the z direction per each pellet:
+
+'nCellsZPellet':                  [10, 10, 5, 20, 30],
+
+# Number of cells in the radial direction per each pellet:
+
+'nCellsRPellet':                  [60, 60, 50, 60, 100],
+
+# IMPORTANT: In the 3D case, if the pellet is not annular, the nCellsRDish must be
+# larger than the nCellsAzimuthalFuel/4
+
+'nCellsRDish' :                  [40, 20, 30, 0, 50],
+'nCellsRChamfer':                [10, 10, 10, 0, 0],
+
+#...............................................................................
+#.......................... for 3D geometries: .................................
+#...............................................................................
+
+# Azimuthal division of the pellet (along the 360 degrees):
+# (should be divisible by 4 since each quarter of the pellet 
+# along azimuthal direction is being treated)
+'nCellsAzimuthalFuel':           [120, 160, 40, 60, 60],
+
+# NOTE: Azimuthal division will ultimately define the numerical division of the 
+# square in the center of the non-annular pellet. The rest of the dish/pellet
+# will be radially discretized with the number of cells:
+
+# DISHED: nR = nCellsRDish-nCellsAzimuthalFuel/4
+# NON-DISHED: nR = nCellsRPellet-nCellsAzimuthalFuel/4
+
+####################### CLADDING MESH PROPERTIES: ##############################
+
+# Azimuthal division of the cladding (along the 360 degrees):
+# (should be divisible by 4 since each quarter of the cladding
+# along azimuthal direction is being treated)
+'nCellsAzimuthalClad':              [80],
+
+#...............................................................................
+#........................... for ALL geometries: ...............................
+#...............................................................................
+
+# Number of cells in the z direction per each cladding block
+'nCellsZClad':                      [10],
+
+# Number of cells in the radial direction (one per block)
+'nCellsRClad':                      [20],
+
+#...............................................................................
+#.......................... for 3D geometries: .................................
+#...............................................................................
+# eccentricity (True/False):
+'eccentricity':                     True,
+
+# eccentricity can be set to 'manual'/'default':
+'eccentricity_mode':             'manual',
+
+# if the eccentricity is set to manual, the eccentricity vector of {[deltaX, deltaY]}
+# should be provided for all the pellets in the rod.
+# Example: for the hypothetical rod of the 'nBlocksFuel': 2 and 'nPelletsFuel':[2, 1]
+# there should be set 3 sets of coordinates: [[0.2, 0.3],[0.0, 0.0],[0.7, 0.1]]
+# IMPORTANT! The number of elements in the list needs to match the total number of pellets!
+
+'eccentricity_vector':          [[0.0,0.0],[0.0,0.0],[0.5, 0.8],[0.0,0.0],[0.0,0.0],\
+                                [0.0,0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0],\
+                                [0.0,0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0],\
+                                [0.0, 0.0],[0.0,0.0],[0.0,0.0],[0.0,0.0]]
+
+}

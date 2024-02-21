@@ -1,0 +1,7 @@
+#!/bin/bash
+
+python3 rodMaker.py
+mv blockMeshDict system
+blockMesh
+paraFoam &
+
